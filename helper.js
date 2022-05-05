@@ -1,29 +1,4 @@
- async function getRecipeList(){
-    const url = `http://localhost:3030/jsonstore/cookbook/recipes`;
-
-    const main = document.querySelector('main')
-try{
-    let response = await fetch(url)
-    let recipes = await response.json()
-
-        main.innerHTML = '';
-        Object.values(recipes).forEach(r => {
-           const result =  e('article',{className:'preview'},
-            e('div',{className: 'title'},e('h2',{},r.name)),
-            e('div',{className: 'small'}),e('img',{src: r.img}))
-            main.appendChild(result)     
-        });
-}catch(err){
-    alert(err.message)
-}
-    
-    
-    
-}
-window.addEventListener('load',()=>{
-    getRecipeList();
-})
-
+//create elements
 function e(type, attributes, ...content) {
     const result = document.createElement(type);
 
@@ -48,4 +23,3 @@ function e(type, attributes, ...content) {
 
     return result;
 }
-
