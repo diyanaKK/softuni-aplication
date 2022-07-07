@@ -2,62 +2,68 @@ function attachEvents() {
     let buttonLoad = document.getElementById('btnLoadPosts')
     buttonLoad.addEventListener('click', loadPosts)
     let buttomView = document.getElementById('btnViewPost')
-    
-    let postsUrl = 'http://localhost:3030/jsonstore/blog/posts'
-let commentsUrl = 'http://localhost:3030/jsonstore/blog/comments/'
-    function loadPosts(ev) {
-        fetch(postsUrl).then(response => response.json()).then(data => {
-            Object.entries(data).forEach(element => {
-                console.log(element);
-                let section = document.getElementById('posts')
-                let option = document.createElement('option')
-                option.textContent = element[1].title
-                option.value = element[0]
-                section.appendChild(option)
+    buttomView.addEventListener('click', displayPost)
+}
+attachEvents();
 
-                buttomView.addEventListener('click',viewPost)
+async function loadPosts(ev) {
+    let postUrl = 'http://localhost:3030/jsonstore/blog/posts'
 
-                function viewPost(ev){
-                    fetch(commentsUrl+option.value).then(response =>response.json()).then(data =>{
-                        console.log(data);
-                    })
-                }
-            })
-        })
-        
-    }
+    const response = await fetch(postUrl)
+    const data = await response.json()
 
-    
+    const select = document.getElementById('posts')
+    Object.values(data).map(createOption).forEach(o => select.appendChild(o))
 
-
-    
-
-
-    
-    function e(type, attributes, ...content) {
-        const result = document.createElement(type);
-
-        for (let [attr, value] of Object.entries(attributes || {})) {
-            if (attr.substring(0, 2) == 'on') {
-                result.addEventListener(attr.substring(2).toLocaleLowerCase(), value);
-            } else {
-                result[attr] = value;
-            }
-        }
-
-        content = content.reduce((a, c) => a.concat(Array.isArray(c) ? c : [c]), []);
-
-        content.forEach(e => {
-            if (typeof e == 'string' || typeof e == 'number') {
-                const node = document.createTextNode(e);
-                result.appendChild(node);
-            } else {
-                result.appendChild(e);
-            }
-        });
-
-        return result;
-    }
+}
+function createOption(post) {
+    const result = document.createElement('option');
+    result.textContent = post.title
+    result.value = post.id
+    return result
 }
 
-attachEvents();
+
+
+function displayPost() {
+    const postId = document.getElementById('posts').value
+    getComments(postId)
+}
+
+async function getComments(postId) {
+    const commentsUl = document.getElementById('post-comments')
+    commentsUl.innerHTML = ' '
+    const postUrl = 'http://localhost:3030/jsonstore/blog/posts/' + postId
+    const commentsUrl = `http://localhost:3030/jsonstore/blog/comments/`
+
+    const [postResponse, commentsResponse] = await Promise.all([
+        fetch(postUrl),
+        fetch(commentsUrl)
+    ])
+
+    const postData = await postResponse.json()
+
+    document.getElementById('post-title').textContent = postData.title;
+    document.getElementById('post-body').textContent = postData.body;
+
+
+
+    const commentsData = await commentsResponse.json()
+    const comments = Object.values(commentsData).filter(c => postId == postId)
+
+
+    comments.map(createCom).forEach(c => commentsUl.appendChild(c));
+
+
+}
+
+function createCom(comment) {
+    const result = document.createElement('li')
+    result.textContent = comment.text
+    result.id = comment.id
+    return result
+}
+
+
+
+
